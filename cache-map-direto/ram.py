@@ -46,10 +46,10 @@ class Ram(MemoryInterface):
         return self._size
 
     @override
-    def _valid_address(self, address: int) -> bool:
+    def _valid_address(self, address: int) -> None:
         """
         Verifica se um endereço de meméria na Ram é válido.
         :param address: Endereço a ser verificado: int
         :return: Válido/Inválido: bool
         """
-        return check_valid_address(self._size, address)
+        check_valid_address(self._size, address)
