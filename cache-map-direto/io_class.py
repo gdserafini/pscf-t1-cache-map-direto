@@ -7,7 +7,7 @@ class IO:
     """
     _prompt: str
 
-    def __init__(self, kargs: list[str]) -> None:
+    def __init__(self, kargs: Optional[list[str]]) -> None:
         self._kargs = kargs
 
     def output(self) -> Optional[str]:
