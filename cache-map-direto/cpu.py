@@ -1,4 +1,4 @@
-gfrom memory import MemoryInterface
+from memory import MemoryInterface
 from io_class import IO
 
 class CPU:
