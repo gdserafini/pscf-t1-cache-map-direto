@@ -19,9 +19,8 @@ class Ram(MemoryInterface):
         :param address: Endereço a ser lido: int
         :return: Palavra: int
         """
-        if self._valid_address(address):
-            return self._words[address]
-        else: return None
+        self._valid_address(address)
+        return self._words[address]
 
     @override
     def write(self, address: int, value: int) -> None:
@@ -33,9 +32,8 @@ class Ram(MemoryInterface):
         """
         if type(value) != int:
             raise TypeError("'value' must be an integer")
-        if self._valid_address(address):
-            self._words[address] = value
-        else: return
+        self._valid_address(address)
+        self._words[address] = value
 
     @override
     def capacity(self) -> int:
