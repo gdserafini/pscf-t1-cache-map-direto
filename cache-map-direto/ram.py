@@ -12,7 +12,6 @@ class Ram(MemoryInterface):
         self._size = 2 ** k
         self._words = [0] * self._size
 
-    @override
     def read(self, address: int) -> Optional[int]:
         """
         Retorna uma palavra da memória conforme endereço específicado
@@ -22,7 +21,6 @@ class Ram(MemoryInterface):
         self._valid_address(address)
         return self._words[address]
 
-    @override
     def write(self, address: int, value: int) -> None:
         """
         Escreve uma palavra em um endereço específico da memória Ram
@@ -35,7 +33,6 @@ class Ram(MemoryInterface):
         self._valid_address(address)
         self._words[address] = value
 
-    @override
     def capacity(self) -> int:
         """
         Retorna a capacidade total da Ram = 2 ** k
@@ -43,7 +40,6 @@ class Ram(MemoryInterface):
         """
         return self._size
 
-    @override
     def _valid_address(self, address: int) -> None:
         """
         Verifica se um endereço de meméria na Ram é válido.
