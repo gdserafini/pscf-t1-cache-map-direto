@@ -1,18 +1,20 @@
+from io_class import IO
+from ram import Ram
 from cache import Cache
-from memory import RAM, EnderecoInvalido
+from cpu import CPU
 
-try:
-    ram = RAM(12)  
-    cache = Cache(7, 4, ram)  
+def main() -> None:
+    try:
+         io = IO(None)
+         ram = Ram(12)
+         cache = Cache(7, 4, ram)
+         cpu = CPU(cache, io)
+         START = 0
+         ram.write(START, 110)
+         ram.write(START + 1, 130)
+         cpu.run(START)
+     except ValueError as ve:
+         print(ve)
 
-    
-    inicio = 0
-    ram.write(inicio, 110)
-    ram.write(inicio + 1, 130)
-
-    
-    print("Valor na cache após execução:", cache.access(inicio))  
-    print("Valor na cache após execução:", cache.access(inicio + 1))  
-
-except EnderecoInvalido as e:
-    print("Endereço inválido:", e.ender) 
+if __name__ == '__main__':
+    main()
