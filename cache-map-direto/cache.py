@@ -1,57 +1,49 @@
 from memory import MemoryInterface
 
-class Cache(MemoryInterface):
-    #TODO -> com mapeamento direto
+class CacheLine:
+    def __init__(self, size):
+        self.tag = None  
+        self.data = [0] * size  
+        self.dirty = False  
 
-    # def __init__(self, k: int, ram: RAM):
-    #     Memory_Interface.__init__(self, ram.capacity())
-    #     self.cache_size = 2 ** k
-    #     self.ram = ram
-    #     self.data = [0] * self.cache_size
-    #     self.block = -1
-    #     self.modified = False
-    #
-    #
-    # @override
-    # def capacity(self) -> int: pass
-    #
-    # @override
-    # def _valid_address(self, address: int) -> None: pass
-    #
-    # @override
-    # def read(self, address: int) -> int:
-    #     if self.cache_hit(address):
-    #         print("Cache HIT:", address)
-    #     else:
-    #         print("Cache MISS:", address)
-    #         block_address = int(address / self.cache_size)
-    #         if self.modified:
-    #             for i in range(self.cache_size):
-    #                 self.ram.write(self.block * self.cache_size + i, self.data[i])
-    #         for i in range(self.cache_size):
-    #             self.data[i] = self.ram.read(block_address * self.cache_size + i)
-    #         self.block = block_address
-    #         self.modified = False
-    #     return self.data[address % self.cache_size]
-    #
-    # @override
-    # def write(self, address: int, value: int) -> None:
-    #     if self._cache_hit(address):
-    #         print("Cache HIT:", address)
-    #     else:
-    #         print("Cache MISS:", address)
-    #         block_address = int(address / self.cache_size)
-    #         if self.modified:
-    #             for i in range(self.cache_size):
-    #                 self.ram.write(self.block * self.cache_size + i, self.data[i])
-    #         for i in range(self.cache_size):
-    #             self.data[i] = self.ram.read(block_address * self.cache_size + i)
-    #         self.block = block_address
-    #         self.modified = False
-    #     self.data[address % self.cache_size] = value
-    #     self.modified = True
-    #
-    # def _cache_hit(self, address: int) -> bool:
-    #     block_address = int(address / self.cache_size)
-    #     return block_address == self.block
-    pass
+class Cache(MemoryInterface):
+
+    def _init_(self, cache_size, line_size, ram):
+        self.cache_size = 2 ** cache_size
+        self.line_size = 2 ** line_size
+        self.lines = [CacheLine(self.line_size) for _ in range(self.cache_size)]
+        self.ram = ram
+    
+    def access(self, address):
+        r = (address // self.line_size) % self.cache_size  
+        t = address // (self.cache_size * self.line_size)  
+        
+        cache_line = self.lines[r]
+        if cache_line.tag == t:
+            
+            w = address % self.line_size
+            return cache_line.data[w]
+        else:
+            
+            print(f"Cache miss! Endereço {address}")
+            
+            self.load_from_ram(address)
+            return self.access(address)  
+
+    def load_from_ram(self, address):
+        r = (address // self.line_size) % self.cache_size
+        t = address // (self.cache_size * self.line_size)
+        
+        cache_line = self.lines[r]
+        
+        if cache_line.dirty:
+            start_addr = (cache_line.tag * self.cache_size + r) * self.line_size
+            for i in range(self.line_size):
+                self.ram.write(start_addr + i, cache_line.data[i])
+        
+        
+        start_addr = (t * self.cache_size + r) * self.line_size
+        cache_line.tag = t
+        for i in range(self.line_size):
+            cache_line.data[i] = self.ram.read(start_addr + i)
+        cache_line.dirty = False

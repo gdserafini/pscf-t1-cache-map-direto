@@ -4,20 +4,18 @@ from cache import Cache
 from cpu import CPU
 
 def main() -> None:
-    #TODO -> com base no script definido no trabalho t1
+    try:
+        io = IO()
+        ram = Ram(12)
+        cache = Cache(7, 4, ram) 
+        cpu = CPU(cache, io)
 
-    # try:
-    #     io = IO(None)
-    #     ram = Ram(12)  # 4K de RAM (2**12)
-    #     cache = Cache(7, 4, ram)  # total cache = 128 (2**7), cacheline = 16 (2**4)
-    #     cpu = CPU(cache, io)
-    #     START = 0
-    #     ram.write(START, 110)
-    #     ram.write(START + 1, 130)
-    #     cpu.run(START)
-    # except ValueError as ve:
-    #     print(ve)
-    pass
+        inicio = 0
+        ram.write(inicio, 110)
+        ram.write(inicio+1, 130)
+        cpu.run(inicio)
+    except EnderecoInvalido as e:
+        print("Endereco inválido:", e.ender, file=sys.stderr)
 
 if __name__ == '__main__':
     main()
