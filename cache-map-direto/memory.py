@@ -1,14 +1,19 @@
-from typing import Optional
+class RAM:
+    def __init__(self, bits):
+        self.size = 2 ** bits  # Tamanho da RAM, ex: 2^12 = 4096 palavras
+        self.memory = [0] * self.size  # Inicializando a RAM com 0s
 
-class MemoryInterface:
-    """
-    Interface para definição de memórias
-    method capacity: Deve retornar o tamanho da memória com número inteiro
-    method _valid_address: Deve lançar exceções de erros de endereço
-    method read: Deve retornar uma palavra, caso exista, sendo um número inteiro
-    method write: Deve salvar uma palavra em um endereço determinado, caso válido
-    """
-    def capacity(self) -> int: pass
-    def _valid_address(self, address: int) -> None: pass
-    def read(self, address: int) -> Optional[int]: pass
-    def write(self, address: int, value: int) -> None: pass
+    def read(self, address):
+        if address < 0 or address >= self.size:
+            raise EnderecoInvalido(address)
+        return self.memory[address]
+
+    def write(self, address, value):
+        if address < 0 or address >= self.size:
+            raise EnderecoInvalido(address)
+        self.memory[address] = value
+
+class EnderecoInvalido(Exception):
+    def __init__(self, ender):
+        self.ender = ender
+        super().__init__(f"Endereço inválido: {ender}")
