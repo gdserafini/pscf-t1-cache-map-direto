@@ -13,8 +13,14 @@ def main() -> None:
          ram.write(START, 110)
          ram.write(START + 1, 130)
          cpu.run(START)
-     except ValueError as ve:
-         print(ve)
+         
+    except ValueError as ve:
+        print(f"Erro de valor: {ve}")
+    except Exception as e:
+        print(f"Ocorreu um erro inesperado: {e}")
+
+        print("Valor na cache após execução:", cache.access(START))  
+        print("Valor na cache após execução:", cache.access(START + 1))
 
 if __name__ == '__main__':
     main()
