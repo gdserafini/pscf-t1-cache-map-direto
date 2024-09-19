@@ -1,4 +1,4 @@
-from typing import override, Optional
+from typing import Optional
 from lib import check_valid_address
 from memory import MemoryInterface
 
