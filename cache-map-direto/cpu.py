@@ -8,10 +8,10 @@ class CPU:
     Defini os registradores A,B e C como zero
     """
     def __init__(self, cache: MemoryInterface, io: IO):
+        self._PC = -1
+        self._A = self._B = self._C = 0
         self._cache = cache
         self._io = io
-        self._PC = 0
-        self._A = self._B = self._C = 0
 
     def run(self, address: int) -> None:
         """
