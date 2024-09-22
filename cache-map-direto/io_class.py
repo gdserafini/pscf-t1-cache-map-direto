@@ -10,12 +10,12 @@ class IO:
     def __init__(self, kargs: Optional[list[str]]) -> None:
         self._kargs = kargs
 
-    def output(self) -> Optional[str]:
+    def output(self) -> None:
         """
         Retorna o valor de input
         :return: Valor de output: str
         """
-        return self._prompt if self._prompt else None
+        print(self._prompt)
 
     def input(self, prompt: str) -> None:
         """
