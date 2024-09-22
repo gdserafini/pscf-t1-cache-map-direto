@@ -1,50 +1,74 @@
+from typing import override, Optional
 from memory import MemoryInterface
+from lib import check_valid_address
 
-class CacheLine:
-    def __init__(self, size):
-        self.tag = None  
-        self.data = [0] * size  
-        self.dirty = False  
+class _CacheLine:
+    def __init__(self, k: int, tag: int) -> None:
+        self._tag = tag
+        self.modified = False
+        self._data = [0] * k  # k palavras
+
+    def get(self) -> dict:
+        return {
+            'tag': self._tag,
+            'modified': self.modified,
+            'data': self._data,
+        }
+
+    def set(self, address: int, value: int) -> None:
+        self._data[address] = value
+        self.modified = True
 
 class Cache(MemoryInterface):
-    def __init__(self, cache_size, line_size, ram):
-        self.cache_size = 2 ** cache_size  
-        self.line_size = 2 ** line_size  
-        self.lines = [CacheLine(self.line_size) for _ in range(self.cache_size)]  
-        self.ram = ram  
+    def __init__(self, kcs: int, kcls: int, ram: MemoryInterface) -> None:
+        self._kcs = kcs
+        self._ram = ram
+        self._kcls = kcls
+        self._cache_size = 2 ** kcs #m blocos
+        self._cache_line_size = 2 ** kcls #k palavras
+        self._lines = [
+            _CacheLine(self._cache_line_size, tag) for tag in range(self._cache_size)
+        ]
 
-    def access(self, address):
-        r = (address // self.line_size) % self.cache_size  
-        t = address // (self.cache_size * self.line_size)  
+    def getk(self) -> tuple: return self._kcs, self._kcls
 
-        cache_line = self.lines[r]
-        if cache_line.tag == t:  
-            w = address % self.line_size  
-            return cache_line.data[w]
-        else:  
-            print(f"Cache miss! Endereço {address}")  
-            self.load_from_ram(address)  
-            return self.access(address)  
+    def print_cache_lines(self):
+        for line in self._lines: print(line.get())
 
-    def load_from_ram(self, address):
-        r = (address // self.line_size) % self.cache_size  
-        t = address // (self.cache_size * self.line_size)  
+    @override
+    def capacity(self) -> int: return self._cache_size
 
-        cache_line = self.lines[r]
+    @override
+    def _valid_address(self, address: int) -> None:
+        check_valid_address(self._cache_size, address)
 
-        if cache_line.dirty:
-            start_addr = (cache_line.tag * self.cache_size + r) * self.line_size
-            for i in range(self.line_size):
-                self.ram.write(start_addr + i, cache_line.data[i])
+    @override
+    def read(self, address: int) -> int:
+        self._valid_address(address)
+        r = (address // self._cache_line_size) % self._cache_size
+        t = address // (self._cache_size * self._cache_line_size)
+        cache_line = self._lines[r]
+        if cache_line.get()['tag'] == t:
+            print(f"Cache hit! Endereço {address}")
+            w = address % self._cache_line_size
+            return cache_line.get()['data'][w]
+        else:
+            print(f"Cache miss! Endereço {address}")
+            self.write(address, None)
+            return self.read(address)
 
-        start_addr = (t * self.cache_size + r) * self.line_size
-        cache_line.tag = t
-        for i in range(self.line_size):
-            cache_line.data[i] = self.ram.read(start_addr + i)
-
-        cache_line.dirty = False
-
-class EnderecoInvalido(Exception):
-    def __init__(self, address):
-        self.ender = address
-        super().__init__(f"Endereço inválido: {address}")
+    @override
+    def write(self, address: int, value: Optional[int]) -> None:
+        self._valid_address(address)
+        r = (address // self._cache_line_size) % self._cache_size
+        t = address // (self._cache_size * self._cache_line_size)
+        cache_line = self._lines[r]
+        if cache_line.modified:
+            start_addr = (cache_line.get()['tag'] * self._cache_size + r) * self._cache_line_size
+            for i in range(self._cache_line_size):
+                self._ram.write(start_addr + i, cache_line.get()['data'][i])
+        start_addr = (t * self._cache_size + r) * self._cache_line_size
+        cache_line.get()['tag'] = t
+        for i in range(self._cache_line_size):
+            cache_line.get()['data'][i] = self._ram.read(start_addr + i)
+        cache_line.modified = False
